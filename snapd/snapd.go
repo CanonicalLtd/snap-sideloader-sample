@@ -19,6 +19,7 @@ const (
 	urlAssertions  = "/v2/assertions"
 	urlInstall     = "/v2/snaps"
 	typeAssertions = "application/x.ubuntu.assertion"
+	baseURL = "http://localhost"
 )
 
 // Client is the abstract client interface
@@ -49,11 +50,13 @@ func NewClient(downloadPath string) *Snapd {
 }
 
 func (snap *Snapd) call(method, url, contentType string, body io.Reader) (*http.Response, error) {
+	u := baseURL + url
+
 	switch method {
 	case "POST":
-		return snap.client.Post(url, contentType, body)
+		return snap.client.Post(u, contentType, body)
 	case "GET":
-		return snap.client.Get(url)
+		return snap.client.Get(u)
 	default:
 		return nil, fmt.Errorf("unsupported method: %s", method)
 	}
