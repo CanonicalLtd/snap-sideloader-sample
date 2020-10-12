@@ -38,13 +38,14 @@ func (web *Web) handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch {
-	case first == "list" && second != "":
+	case first == "list" && second == "":
 		resp, err := web.snapdClient.List()
 		if err != nil {
 			formatStandardResponse("error", err.Error(), w)
 			return
 		}
 		fmt.Fprintf(w, string(resp))
+		return
 
 	case first != "" && second != "":
 		// sideload the snap from the predefined path
@@ -53,6 +54,7 @@ func (web *Web) handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		formatStandardResponse("", "Snap submitted", w)
+		return
 
 	default:
 		formatStandardResponse("error", "Incorrect URL format, use: /snap-name/revision", w)
@@ -61,7 +63,9 @@ func (web *Web) handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func parseURL(urlPath string) (string, string, error) {
+	fmt.Println(urlPath)
 	p := strings.Split(urlPath, "/")[1:]
+	fmt.Println(p)
 
 	if len(p) == 1 {
 		return p[0], "", nil
