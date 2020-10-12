@@ -17,7 +17,7 @@ import (
 const (
 	socketFile     = "/run/snapd.socket"
 	urlAssertions  = "/v2/assertions"
-	urlInstall     = "/v2/snaps"
+	urlSnaps       = "/v2/snaps"
 	typeAssertions = "application/x.ubuntu.assertion"
 	baseURL = "http://localhost"
 )
@@ -26,6 +26,7 @@ const (
 type Client interface {
 	Ack(assertion []byte) error
 	InstallPath(name, filePath string) error
+	List() ([]byte, error)
 	SideloadInstall(name, revision string) error
 }
 
@@ -79,8 +80,18 @@ func (snap *Snapd) InstallPath(name, filePath string) error {
 	mw := multipart.NewWriter(pw)
 	go sendSnapFile(name, filePath, f, pw, mw)
 
-	_, err = snap.call("POST", urlInstall, mw.FormDataContentType(), pr)
+	_, err = snap.call("POST", urlSnaps, mw.FormDataContentType(), pr)
 	return err
+}
+
+// List the installed snaps
+func (snap *Snapd) List() ([]byte, error) {
+	resp, err := snap.call("GET", urlSnaps, "application/json; charset=UTF-8", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return ioutil.ReadAll(resp.Body)
 }
 
 // SideloadInstall side loads a snap by acknowledging the assertion and installing the snap

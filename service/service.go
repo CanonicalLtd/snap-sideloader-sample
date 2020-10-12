@@ -31,24 +31,41 @@ func (web *Web) Start() error {
 }
 
 func (web *Web) handler(w http.ResponseWriter, r *http.Request) {
-	snap, revision, err := parseURL(r.URL.Path)
+	first, second, err := parseURL(r.URL.Path)
 	if err != nil {
 		formatStandardResponse("error", err.Error(), w)
 		return
 	}
 
-	// sideload the snap from the predefined path
-	if err := web.snapdClient.SideloadInstall(snap, revision); err != nil {
-		formatStandardResponse("error", err.Error(), w)
-		return
+	switch {
+	case first == "list" && second != "":
+		resp, err := web.snapdClient.List()
+		if err != nil {
+			formatStandardResponse("error", err.Error(), w)
+			return
+		}
+		fmt.Fprintf(w, string(resp))
+
+	case first != "" && second != "":
+		// sideload the snap from the predefined path
+		if err := web.snapdClient.SideloadInstall(first, second); err != nil {
+			formatStandardResponse("error", err.Error(), w)
+			return
+		}
+		formatStandardResponse("", "Snap submitted", w)
+
+	default:
+		formatStandardResponse("error", "Incorrect URL format, use: /snap-name/revision", w)
 	}
 
-	formatStandardResponse("", "Snap submitted", w)
 }
 
 func parseURL(urlPath string) (string, string, error) {
 	p := strings.Split(urlPath, "/")[1:]
 
+	if len(p) == 1 {
+		return p[0], "", nil
+	}
 	if len(p) != 2 {
 		return "", "", fmt.Errorf("incorrect URL format, use: /snap-name/revision")
 	}
