@@ -19,7 +19,7 @@ const (
 	urlAssertions  = "/v2/assertions"
 	urlSnaps       = "/v2/snaps"
 	typeAssertions = "application/x.ubuntu.assertion"
-	baseURL = "http://localhost"
+	baseURL        = "http://localhost"
 )
 
 // Client is the abstract client interface
