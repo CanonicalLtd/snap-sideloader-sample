@@ -9,7 +9,7 @@ base: core18
 
 apps:
   run:
-    command: bin/sideloader
+    command: bin/snap-sideloader
     daemon: simple
     plugs:
       - network
